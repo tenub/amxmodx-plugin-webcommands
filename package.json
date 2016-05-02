@@ -1,0 +1,24 @@
+{
+  "name": "amxmodx-plugin-webcommands",
+  "version": "1.0.0",
+  "description": "Register client commands to show web URLs",
+  "scripts": {
+    "build": "node build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenub/amxmodx-plugin-webcommands.git"
+  },
+  "author": "Joseph Chrzan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tenub/amxmodx-plugin-webcommands/issues"
+  },
+  "homepage": "https://github.com/tenub/amxmodx-plugin-webcommands#readme",
+  "dependencies": {
+    "amxmodx-build": "tenub/amxmodx-build"
+  },
+  "amxmodx": {
+    "path": "C:/Program Files (x86)/Steam/steamapps/common/Half-Life/cstrike/addons/amxmodx"
+  }
+}
