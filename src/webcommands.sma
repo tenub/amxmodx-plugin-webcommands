@@ -17,6 +17,74 @@ public plugin_init()
 	RegisterURICommands()
 }
 
+public plugin_precache()
+{
+	get_configsdir(g_szConfigsName, charsmax(g_szConfigsName))
+	formatex(g_szFilename, charsmax(g_szFilename), "%s/AutoCommandExec.ini", g_szConfigsName)
+	formatex(g_szTempFile, charsmax(g_szTempFile), "%s/TempFile.ini", g_szConfigsName)
+	g_tPlayerData = TrieCreate()
+	g_tRemovedData = TrieCreate()
+	fileRead(0)
+}
+
+public plugin_end()
+{
+	fileRead(1)
+}
+
+public fileRead(iWrite)
+{
+	new iFilePointer = fopen(g_szFilename, "rt")
+	new iTempFilePointer = fopen(g_szTempFile, "wt")
+
+	new szData[512], szType[6], szInfo[32], szCommand[128], szRepeat[4], szMessage[192], szSetData[380]
+
+	if(iWrite)
+	{
+		new szHelp[192]
+
+		for(new i; i < sizeof(g_szFileHelp); i++)
+		{
+			formatex(szHelp, charsmax(szHelp), ";%s^n", g_szFileHelp[i])
+			fputs(iTempFilePointer, szHelp)
+		}
+	}
+
+	while(!feof(iFilePointer))
+	{
+		fgets(iFilePointer, szData, charsmax(szData))
+
+		if(!iWrite)
+			replace(szData, charsmax(szData), "^n", "")
+
+		if(szData[0] == EOS || szData[0] == ';')
+			continue
+
+		parse(szData, szType, charsmax(szType), szInfo, charsmax(szInfo), szCommand, charsmax(szCommand), szRepeat, charsmax(szRepeat), szMessage, charsmax(szMessage))
+
+		if(is_blank(szInfo))
+			continue
+
+		formatex(szSetData, charsmax(szSetData), "^"%s^" ^"%s^" ^"%s^" ^"%s^" ^"%s^"", szType, szInfo, szCommand, szRepeat, szMessage)
+		if(!TrieKeyExists(g_tRemovedData, szInfo)) TrieSetString(g_tPlayerData, szInfo, szSetData)
+
+		if(iWrite)
+		{
+			if(TrieKeyExists(g_tPlayerData, szInfo))
+				fputs(iTempFilePointer, szData)
+		}
+	}
+
+	fclose(iFilePointer)
+	fclose(iTempFilePointer)
+
+	if(iWrite)
+	{
+		delete_file(g_szFilename)
+		rename_file(g_szTempFile, g_szFilename, 1)
+	}
+}
+
 public RegisterURICommands()
 {
 	new i, command[32];
