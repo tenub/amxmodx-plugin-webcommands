@@ -33,4 +33,4 @@ Config file where client commands are registered
 
 ---
 
-Both `webcommands.ini` and `webcommands.cfg` config files should be placed in the config directory. If building with [amxmodx-build](tenub/amxmodx-build), file copy is handled automatically
+Both `webcommands.ini` and `webcommands.cfg` config files should be placed in the config directory. If building with [amxmodx-build](https://github.com/tenub/amxmodx-build), file copy is handled automatically
