@@ -1,6 +1,5 @@
 #include <amxmodx>
 #include <amxmisc>
-#include <cellarray>
 
 #define WEB_BASE_URL "http://localhost"
 #define WEB_FILENAME "webcommands"
@@ -8,14 +7,14 @@
 new g_ConfigsDir[64]
 new g_IniPath[128]
 new g_WebBase[64]
-new g_BaseCvar
+new g_WebBaseCvar
 
 new Array:g_WebCommands
 
 public plugin_init()
 {
 	register_plugin("Register Web URI Commands", "1.0", "pvab")
-	g_BaseCvar = create_cvar("kz_web_base", WEB_BASE_URL)
+	g_WebBaseCvar = create_cvar("web_base_url", WEB_BASE_URL)
 	g_WebCommands = ArrayCreate(32)
 }
 
@@ -29,7 +28,16 @@ public plugin_cfg()
 	formatex(g_IniPath, sizeof(g_IniPath) - 1, "%s/%s.ini", g_ConfigsDir, WEB_FILENAME)
 	fileRead(g_IniPath)
 
-	RegisterURICommands()
+	registerUriCommands()
+}
+
+public ShowMotd(id)
+{
+  new arg[32], url[128]
+
+  read_argv(1, arg, sizeof(arg) - 1);
+  formatex(url, sizeof(url) - 1, "%s%s", g_WebBase, arg)
+  show_motd(id, url)
 }
 
 fileRead(filepath[])
@@ -65,12 +73,12 @@ fileRead(filepath[])
 	return true
 }
 
-RegisterURICommands()
+registerUriCommands()
 {
 	new command[32], cntWebCommands;
 
 	cntWebCommands = ArraySize(g_WebCommands)
-	get_pcvar_string(g_BaseCvar, g_WebBase, sizeof(g_WebBase) - 1)
+	get_pcvar_string(g_WebBaseCvar, g_WebBase, sizeof(g_WebBase) - 1)
 
 	for (new i = 0; i < cntWebCommands; i++)
 	{
@@ -79,14 +87,4 @@ RegisterURICommands()
 	}
 
 	return ArrayDestroy(g_WebCommands)
-}
-
-
-public ShowMotd(id)
-{
-	new arg[32], url[128]
-
-	read_argv(1, arg, sizeof(arg) - 1);
-	formatex(url, sizeof(url) - 1, "%s%s", g_WebBase, arg)
-	show_motd(id, url)
 }
