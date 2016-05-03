@@ -1,101 +1,84 @@
 #include <amxmodx>
+#include <amxmisc>
+#include <cellarray>
 
-#define PLUGIN "Register Web URI Commands"
-#define VERSION "1.0"
-#define AUTHOR "pvab"
+#define WEB_BASE_URL "http://localhost"
+#define WEB_FILENAME "webcommands"
 
-#define DEFAULT_WEB_BASE_URL "http://localhost"
-#define DEFAULT_WEB_COMMANDS "commands"
+new g_ConfigsDir[64]
+new g_IniPath[128]
+new g_WebBase[64]
+new g_BaseCvar
 
-new g_WebBase[64], g_WebCommands[512], g_BaseCvar, g_CommandsCvar
+new Array:g_WebCommands
 
 public plugin_init()
 {
-	register_plugin(PLUGIN, VERSION, AUTHOR)
-	g_BaseCvar = create_cvar("kz_web_base", DEFAULT_WEB_BASE_URL)
-	g_CommandsCvar = create_cvar("kz_web_commands", DEFAULT_WEB_COMMANDS)
+	register_plugin("Register Web URI Commands", "1.0", "pvab")
+	g_BaseCvar = create_cvar("kz_web_base", WEB_BASE_URL)
+	g_WebCommands = ArrayCreate(32)
+}
+
+public plugin_cfg()
+{
+	get_configsdir(g_ConfigsDir, sizeof(g_ConfigsDir) - 1)
+
+	server_cmd("exec %s/%s.cfg", g_ConfigsDir, WEB_FILENAME)
+	server_exec()
+
+	formatex(g_IniPath, sizeof(g_IniPath) - 1, "%s/%s.ini", g_ConfigsDir, WEB_FILENAME)
+	fileRead(g_IniPath)
+
 	RegisterURICommands()
 }
 
-public plugin_precache()
+fileRead(filepath[])
 {
-	get_configsdir(g_szConfigsName, charsmax(g_szConfigsName))
-	formatex(g_szFilename, charsmax(g_szFilename), "%s/AutoCommandExec.ini", g_szConfigsName)
-	formatex(g_szTempFile, charsmax(g_szTempFile), "%s/TempFile.ini", g_szConfigsName)
-	g_tPlayerData = TrieCreate()
-	g_tRemovedData = TrieCreate()
-	fileRead(0)
-}
-
-public plugin_end()
-{
-	fileRead(1)
-}
-
-public fileRead(iWrite)
-{
-	new iFilePointer = fopen(g_szFilename, "rt")
-	new iTempFilePointer = fopen(g_szTempFile, "wt")
-
-	new szData[512], szType[6], szInfo[32], szCommand[128], szRepeat[4], szMessage[192], szSetData[380]
-
-	if(iWrite)
+	if (!file_exists(filepath))
 	{
-		new szHelp[192]
+		return PLUGIN_CONTINUE
+	}
 
-		for(new i; i < sizeof(g_szFileHelp); i++)
+	new f = fopen(filepath, "rt");
+
+	if (!f)
+	{
+		return PLUGIN_CONTINUE
+	}
+
+	new data[32];
+
+	while (!feof(f))
+	{
+		fgets(f, data, sizeof(data) - 1);
+
+		if (!data[0] || data[0] == '^n' || data[0] == ';' || data[0] == '/' && data[1] == '/' )
 		{
-			formatex(szHelp, charsmax(szHelp), ";%s^n", g_szFileHelp[i])
-			fputs(iTempFilePointer, szHelp)
+			continue;
 		}
+
+		ArrayPushString(g_WebCommands, data)
 	}
 
-	while(!feof(iFilePointer))
-	{
-		fgets(iFilePointer, szData, charsmax(szData))
+	fclose(f);
 
-		if(!iWrite)
-			replace(szData, charsmax(szData), "^n", "")
-
-		if(szData[0] == EOS || szData[0] == ';')
-			continue
-
-		parse(szData, szType, charsmax(szType), szInfo, charsmax(szInfo), szCommand, charsmax(szCommand), szRepeat, charsmax(szRepeat), szMessage, charsmax(szMessage))
-
-		if(is_blank(szInfo))
-			continue
-
-		formatex(szSetData, charsmax(szSetData), "^"%s^" ^"%s^" ^"%s^" ^"%s^" ^"%s^"", szType, szInfo, szCommand, szRepeat, szMessage)
-		if(!TrieKeyExists(g_tRemovedData, szInfo)) TrieSetString(g_tPlayerData, szInfo, szSetData)
-
-		if(iWrite)
-		{
-			if(TrieKeyExists(g_tPlayerData, szInfo))
-				fputs(iTempFilePointer, szData)
-		}
-	}
-
-	fclose(iFilePointer)
-	fclose(iTempFilePointer)
-
-	if(iWrite)
-	{
-		delete_file(g_szFilename)
-		rename_file(g_szTempFile, g_szFilename, 1)
-	}
+	return true
 }
 
-public RegisterURICommands()
+RegisterURICommands()
 {
-	new i, command[32];
+	new command[32], cntWebCommands;
 
+	cntWebCommands = ArraySize(g_WebCommands)
 	get_pcvar_string(g_BaseCvar, g_WebBase, sizeof(g_WebBase) - 1)
-	get_pcvar_string(g_CommandsCvar, g_WebCommands, sizeof(g_WebCommands) - 1)
 
-	while ((i = argparse(g_WebCommands, i, command, sizeof(command) - 1)) >= 0) {
-		formatex(command, sizeof(command) - 1, "say /%s", command)
+	for (new i = 0; i < cntWebCommands; i++)
+	{
+		formatex(command, sizeof(command) - 1, "say /%a", ArrayGetStringHandle(g_WebCommands, i))
 		register_clcmd(command, "ShowMotd")
 	}
+
+	return ArrayDestroy(g_WebCommands)
 }
 
 
