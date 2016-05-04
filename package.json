@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/tenub/amxmodx-plugin-webcommands#readme",
   "dependencies": {
-    "amxmodx-build": "tenub/amxmodx-build"
+    "amxmodx-build": "file:../amxmodx-build"
   },
   "amxmodx": {
     "path": "C:/Program Files (x86)/Steam/steamapps/common/Half-Life/cstrike/addons/amxmodx"
