@@ -33,11 +33,11 @@ public plugin_cfg()
 
 public ShowMotd(id)
 {
-  new arg[32], url[128]
+	new arg[32], url[128]
 
-  read_argv(1, arg, sizeof(arg) - 1);
-  formatex(url, sizeof(url) - 1, "%s%s", g_WebBase, arg)
-  show_motd(id, url)
+	read_argv(1, arg, sizeof(arg) - 1);
+	formatex(url, sizeof(url) - 1, "%s%s", g_WebBase, arg)
+	show_motd(id, url)
 }
 
 fileRead(filepath[])
